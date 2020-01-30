@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="dev.mvc.pdcontents.PdcontentsDAOInter"> 
+  <select id="list_all" resultType="PdcontentsVO">
+    SELECT pdcontentsno, productcateno, title, price, content,
+                              recom,cnt,replycnt,rdate,word, fname, fupname, thumb, fsize 
+    FROM pdcontents
+    ORDER BY pdcontentsno DESC
+  </select>
+  
+  <insert id="create" parameterType="PdcontentsVO">
+    INSERT INTO pdcontents(pdcontentsno, productcateno, title, price, content,
+                              recom,cnt,replycnt,rdate,word, fname, fupname, thumb, fsize )
+    VALUES((SELECT NVL(MAX(pdcontentsno),0)+1 as pdcontentsno FROM pdcontents),
+             #{productcateno}, #{title}, #{price}, #{content},
+             #{recom}, #{cnt}, #{replycnt}, sysdate, #{word}, #{fname}, #{fupname}, #{thumb}, #{fsize})
+  </insert>
+  
+  <select id="list_by_productcateno" resultType="PdcontentsVO" parameterType="int">
+     SELECT pdcontentsno, productcateno, title, price, content,
+                              recom,cnt,replycnt,rdate,word, fname, fupname, thumb, fsize 
+     FROM pdcontents
+     WHERE productcateno= #{productcateno}
+     ORDER BY pdcontentsno DESC
+  </select> 
+   
+   <select id="total_count" resultType="int">
+     SELECT COUNT(*) as count
+     FROM pdcontents
+   </select> 
+   
+   <select id="read" resultType="PdcontentsVO" parameterType="int">
+     SELECT pdcontentsno, productcateno, title, price, content,
+                              recom,cnt,replycnt,rdate,word, fname, fupname, thumb, fsize 
+     FROM pdcontents
+     WHERE pdcontentsno=#{pdcontentsno}
+   </select>   
+   
+   <update id="update" parameterType="PdcontentsVO">
+     UPDATE pdcontents
+     SET title=#{title}, content=#{content}, word=#{word}
+     WHERE pdcontentsno = #{pdcontentsno}
+   </update>
+
+   <update id="update_thumb" parameterType="PdcontentsVO">
+     UPDATE pdcontents
+     SET fname=#{fname}, fupname=#{fupname}, thumb=#{thumb}, fsize=#{fsize} 
+     WHERE pdcontentsno = #{pdcontentsno}
+   </update>
+   
+   <delete id="delete" parameterType="int">
+     DELETE FROM pdcontents
+     WHERE pdcontentsno = #{pdcontentsno}
+   </delete>
+   
+   <!-- FK 컬럼 값이 사용된 레코드 삭제: id="delete_by_categrpno" -->  
+   <delete id="delete_by_productcateno" parameterType="int">
+     DELETE FROM pdcontents
+     WHERE productcateno=#{productcateno}
+   </delete> 
+   
+   
+   <update id="increasePdreplycnt" parameterType="int">
+      UPDATE pdreply
+      SET replycnt = replycnt + 1 
+      WHERE pdcontentsno=#{pdcontentsno}
+   </update>
+  
+   <update id="decreasePdreplycnt" parameterType="int">
+      UPDATE pdreply
+      SET replycnt = replycnt - 1 
+      WHERE pdcontentsno=#{pdcontentsno}
+   </update> 
+   
+   <!-- categrpno 별 검색된 레코드 목록 -->
+   <select id="list_by_productcateno_search" resultType="PdcontentsVO" parameterType="HashMap">
+      SELECT pdcontentsno, productcateno, title, price, content,
+                              recom,cnt,replycnt,rdate,word, fname, fupname, thumb, fsize
+      FROM pdcontents
+      <choose>
+        <when test="word == null or word == ''">  <!-- 검색하지 않는 경우 -->
+          WHERE productcateno=#{productcateno}
+        </when>
+        <otherwise> <!-- 검색하는 경우 -->
+          WHERE productcateno=#{productcateno} AND word LIKE '%' || #{word} || '%'  
+        </otherwise>
+      </choose>      
+      ORDER BY pdcontentsno DESC
+   </select>
+   
+   <!-- 카테고리별 검색 레코드 개수 -->
+   <select id="search_count" resultType="int" parameterType="HashMap">
+    SELECT COUNT(*) as cnt
+    FROM pdcontents
+    <choose>
+      <when test="word == null or word == ''">
+        WHERE productcateno = #{productcateno}
+      </when>
+      <otherwise>
+        WHERE productcateno =#{productcateno} AND word LIKE '%' || #{word} || '%'  
+      </otherwise>
+    </choose>
+   </select>
+   
+   <!-- 카테고리별 검색 목록 + 페이징 -->  
+   <select id="list_by_productcateno_search_paging" resultType="PdcontentsVO" parameterType="HashMap">
+    SELECT pdcontentsno, productcateno, title, price, content,
+                              recom,cnt,replycnt,rdate,word, fname, fupname, thumb, fsize, r
+    FROM (
+              SELECT pdcontentsno, productcateno, title, price, content,
+                              recom, cnt, replycnt, rdate, word, fname, fupname, thumb, fsize, rownum as r
+              FROM (
+                        SELECT pdcontentsno, productcateno, title, price, content,
+                              recom, cnt, replycnt, rdate, word, fname, fupname, thumb, fsize
+                        FROM pdcontents
+                        <choose>
+                          <when test="word == null or word == ''">  <!-- 검색하지 않는 경우 -->
+                            WHERE productcateno=#{productcateno}
+                          </when>
+                          <otherwise> <!-- 검색하는 경우 -->
+                            WHERE productcateno=#{productcateno} AND word LIKE '%' || #{word} || '%'  
+                          </otherwise>
+                        </choose>      
+                        ORDER BY pdcontentsno DESC
+              )
+     )
+     WHERE r &gt;=#{startNum} AND r &lt;=#{endNum}
+     <!-- 
+     1page : WHERE r >=1 AND r <=10 
+     2page : WHERE r >=11 AND r <=20
+     3page : WHERE r >=21 AND r <=30
+     -->
+   </select>
+</mapper>
+
+
+
+
+

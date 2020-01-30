@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="dev.mvc.pdatfile.PdatfileDAOInter"> 
+  <select id="list" resultType="PdatfileVO">
+    SELECT pdatfileno, pdcontentsno, fname, fupname, thumb, fsize, rdate
+    FROM pdatfile
+    ORDER BY pdcontentsno DESC,  pdatfileno ASC
+  </select>
+  
+  <insert id="create" parameterType="PdatfileVO">
+    INSERT INTO pdatfile(pdatfileno, pdcontentsno, fname, fupname, thumb, fsize, rdate)
+    VALUES((SELECT NVL(MAX(pdatfileno), 0) + 1 as pdatfileno FROM pdatfile),
+             #{pdcontentsno}, #{fname}, #{fupname}, #{thumb}, #{fsize}, sysdate)
+  </insert>
+              
+  <select id="list_by_pdcontentsno" resultType="PdatfileVO" parameterType="int">
+    SELECT pdatfileno, pdcontentsno, fname, fupname, thumb, fsize, rdate
+    FROM pdatfile
+    WHERE pdcontentsno=#{pdcontentsno}
+    ORDER BY fname ASC
+  </select>
+  
+    <!-- FK 컬럼 값이 사용된 레코드 갯수 산출: id="count_by_pdcontentsno" -->  
+  <select id="count_by_pdcontentsno" resultType="int" parameterType="int">
+    SELECT COUNT(*) as cnt
+    FROM pdatfile
+    WHERE pdcontentsno = #{pdcontentsno}
+  </select>
+  
+    <!-- FK 컬럼 값이 사용된 레코드 삭제: id="delete_by_pdcontentsno" -->  
+  <delete id="delete_by_pdcontentsno" parameterType="int">
+    DELETE FROM pdatfile
+    WHERE pdcontentsno = #{pdcontentsno}
+  </delete>
+  
+  <select id="read" resultType="PdatfileVO" parameterType="int">
+    SELECT pdatfileno, pdcontentsno, fname, fupname, thumb, fsize, rdate
+    FROM pdatfile
+    WHERE pdatfileno = #{pdatfileno}
+  </select>
+  
+  <delete id="delete" parameterType="int">
+    DELETE FROM pdatfile
+    WHERE pdatfileno = #{pdatfileno}
+  </delete>
+  
+</mapper>

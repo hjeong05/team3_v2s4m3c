@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "dev.mvc.pdreply.PdreplyDAOInter">
+  <insert id="create" parameterType="PdreplyVO">
+    INSERT INTO pdreply(pdreplyno, pdcontentsno, memberno, starcnt, content, passwd, rdate)
+    VALUES((SELECT NVL(MAX(pdreplyno), 0) + 1 as pdreplyno FROM pdreply),
+             #{pdcontentsno},#{memberno}, #{starcnt}, #{content}, #{passwd}, sysdate);
+  </insert>
+  
+  <select id="list" resultType="PdreplyVO">
+    SELECT pdreplyno, pdcontentsno, memberno, starcnt, content, passwd, rdate
+    FROM pdreply
+    ORDER BY pdreplyno DESC;
+  </select>
+
+  <select id="list_by_pdcontentsno" resultType="PdreplyVO" parameterType="int">
+    SELECT pdreplyno, pdcontentsno, memberno, starcnt, content, passwd, rdate
+    FROM pdreply
+    WHERE pdcontentsno=#{pdcontentsno}
+    ORDER BY pdreplyno DESC
+  </select>
+  
+  <select id="list_by_pdcontentsno_join" resultType="PdreplyMemberVO" parameterType="int">
+    SELECT m.id, 
+          r.pdreplyno, r.pdcontentsno, r.starcnt, r.memberno, r.content, r.passwd, r.rdate
+    FROM member m, pdreply r
+    WHERE (m.memberno = r.memberno) AND r.pdcontentsno=#{r.pdcontentsno}
+    ORDER BY pdreplyno DESC
+  </select>
+  
+  <select id="pdreply_cnt" resultType="int">
+    SELECT COUNT(*) as cnt
+    FROM pdreply
+  </select>
+  
+  <!-- 회원 패스워드 검사 -->
+  <select id="checkPasswd" resultType ="int" parameterType="Map">
+    SELECT count(*) as cnt
+    FROM pdreply
+    WHERE pdreplyno=#{pdreplyno} AND passwd=#{passwd} 
+  </select>
+  
+  <delete id="delete" parameterType="int">
+    DELETE FROM pdreply
+    WHERE pdreplyno=#{pdreplyno}
+  </delete>
+  
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="dev.mvc.memcate.MemcateDAOInter"> 
+   
+   <!-- 등록 -->
+   <insert id="create" parameterType="MemcateVO">
+     INSERT INTO memcate(memcateno, name, seqno, visible, rdate, cnt)
+     VALUES((SELECT NVL(MAX(memcateno), 0) + 1 as memcateno FROM memcate), 
+                 #{name}, #{seqno}, #{visible}, sysdate, 0)
+   </insert>
+   
+   <!-- 목록 -->
+   <select id="list_seqno_asc" resultType="MemcateVO">
+     SELECT memcateno, name, seqno, visible, rdate, cnt
+     FROM memcate
+     ORDER BY seqno ASC
+   </select> 
+   
+   <!-- 조회 -->
+   <select id="read" resultType="MemcateVO" parameterType="int">
+     SELECT memcateno, name, seqno, visible, rdate, cnt
+     FROM memcate
+     WHERE memcateno = #{memcateno}
+   </select> 
+   
+   <!-- 수정 -->
+   <update id="update" parameterType="MemcateVO">
+     UPDATE memcate
+     SET name=#{name}, seqno = #{seqno}, visible=#{visible}
+     WHERE memcateno = #{memcateno}
+   </update>
+   
+   <!-- 삭제 -->
+   <delete id="delete" parameterType="int">
+     DELETE FROM memcate
+     WHERE memcateno = #{memcateno}
+   </delete>
+   
+   <!-- 회원수 증가 -->
+  <update id="increaseCnt" parameterType="int">
+    UPDATE memcate 
+    SET cnt = cnt + 1 
+    WHERE memcateno=#{memcateno}
+  </update>
+  
+  <!-- 회원수 감소 -->
+  <update id="decreaseCnt" parameterType="int">
+    UPDATE memcate 
+    SET cnt = cnt - 1 
+    WHERE memcateno=#{memcateno}
+  </update>
+  
+   <!-- 순서 up -->
+  <update id="update_seqno_up" parameterType="int">
+    UPDATE memcate
+    SET seqno = seqno - 1
+    WHERE memcateno = #{memcateno}
+  </update>
+   
+   <!-- 순서 down --> 
+  <update id="update_seqno_down" parameterType="int">
+    UPDATE memcate
+    SET seqno = seqno + 1
+    WHERE memcateno = #{memcateno}
+  </update>
+    
+   <!-- 회원수 초기화(0명) -->
+  <update id="cnt_zero" parameterType="int">
+    UPDATE memcate 
+    SET cnt = 0 
+    WHERE memcateno = #{memcateno}
+  </update>
+
+  
+</mapper>

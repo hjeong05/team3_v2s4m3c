@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace = "dev.mvc.mkmember.MkmemberDAOInter">
+
+  <!-- 아이디 중복 검사 -->
+  <select id="checkId" parameterType="String" resultType="int">
+    SELECT COUNT(id) as cnt
+    FROM mkmember
+    WHERE id=#{id}
+  </select>
+  
+  <!-- 회원가입 -->
+  <insert id="create" parameterType="MkmemberVO">
+    INSERT INTO mkmember(memberno, memcateno, id, passwd, mname, tel, zipcode, address1, address2, mdate)
+    VALUES ((SELECT NVL(MAX(memberno), 0)+1 as memberno FROM mkmember), #{memcateno},
+    #{id}, #{passwd}, #{mname}, #{tel}, #{zipcode}, #{address1}, #{address2}, sysdate)
+  </insert>
+  
+  <!-- 등급별 회원 목록 -->
+  <select id="list_by_memcateno" resultType="MkmemberVO" parameterType="int">
+    SELECT memberno, memcateno, id, passwd, mname, tel, zipcode, address1, address2, mdate
+    FROM mkmember
+    WHERE memcateno=#{memcateno}
+    ORDER BY memberno ASC
+  </select>
+  
+  <!-- 전체 회원 목록 -->
+  <select id="list_all" resultType="MkmemberVO" >
+    SELECT memberno, memcateno, id, passwd, mname, tel, zipcode, address1, address2, mdate
+    FROM mkmember
+    ORDER BY memberno ASC
+  </select>
+  
+  <!-- 회원 정보 조회(memberno 기준) -->
+  <select id="read" resultType="MkmemberVO" parameterType="int">
+    SELECT memberno, memcateno, id, passwd, mname, tel, zipcode, address1, address2, mdate
+    FROM mkmember
+    WHERE memberno = #{memberno}
+  </select>  
+  
+  <!-- 회원 정보 조회(id 기준) -->
+  <select id="readById" resultType="MkmemberVO" parameterType="String">
+    SELECT memberno, memcateno, id, passwd, mname, tel, zipcode, address1, address2, mdate
+    FROM mkmember
+    WHERE id = #{id}
+  </select>
+  
+  <!-- 회원 정보 수정 -->
+  <update id="update" parameterType="MkmemberVO">
+    UPDATE mkmember 
+    SET mname=#{mname}, tel=#{tel}, zipcode=#{zipcode},
+          address1=#{address1}, address2=#{address2}
+    WHERE memberno=#{memberno}
+  </update>
+  
+  <!-- 패스워드 검사 -->
+  <select id="passwd_check"  resultType ="int" parameterType="HashMap">
+    SELECT COUNT(memberno) as cnt
+    FROM mkmember
+    WHERE memberno = #{memberno}  AND passwd=#{passwd}
+  </select>
+
+  <!-- 패스워드 변경 -->
+  <update id="passwd_update" parameterType="HashMap">
+    UPDATE mkmember
+    SET passwd= #{passwd}
+    WHERE memberno= #{memberno}
+  </update>
+  
+  <!-- 회원 삭제 -->
+  <delete id="delete" parameterType="int">
+    DELETE FROM mkmember
+    WHERE memberno=#{memberno}
+  </delete>
+  
+  <!-- 등급별 회원수 -->
+  <select id="count_by_memcateno" resultType="int" parameterType="int"> 
+    SELECT count(*) AS cnt
+    FROM mkmember
+    WHERE memcateno=#{memcateno}
+  </select>
+   
+   <!-- 등급별 회원 삭제 -->  
+  <delete id="delete_by_memcateno" parameterType="int">
+    DELETE FROM mkmember
+    WHERE memcateno=#{memcateno}
+  </delete> 
+  
+  <!-- 로그인 -->
+  <select id="login" parameterType="Map" resultType ="int">
+    SELECT COUNT(memberno) as cnt
+    FROM mkmember
+    WHERE id=#{id} AND passwd=#{passwd}
+  </select>
+  
+  <!-- 회원 등급 변경 -->
+  <update id="grade_update" parameterType="HashMap">
+    UPDATE mkmember 
+    SET memcateno=#{memcateno}
+    WHERE memberno=#{memberno}
+  </update>
+
+</mapper> 
